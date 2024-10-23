@@ -22,7 +22,7 @@ lr=1e-4
 lr_gamma=0.1
 neg_choose_epoch=80
 lr_drop=100
-n_epoch=200
+n_epoch=2
 
 ######## data paths
 train_path=data/highlight_train_release.jsonl

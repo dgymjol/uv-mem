@@ -152,7 +152,7 @@ def train(model, criterion, optimizer, lr_scheduler, train_dataset, val_dataset,
         if epoch_i > -1:
             train_epoch(model, criterion, train_loader, optimizer, opt, epoch_i, tb_writer)
             lr_scheduler.step()
-        eval_epoch_interval = 5
+        eval_epoch_interval = 1 if opt.dset_name == 'ytc' else 5  # smaller for pretrain
         if (opt.eval_path is not None and (epoch_i + 1) % eval_epoch_interval == 0):
         # if 1:
             with torch.no_grad():
@@ -418,7 +418,7 @@ def start_training():
         eval_dataset = None
 
     model, criterion, optimizer, lr_scheduler = setup_model(opt)
-    logger.info(f"Model {model}")
+    # logger.info(f"Model {model}")
     count_parameters(model)
     logger.info("Start Training...")
     
@@ -443,7 +443,7 @@ if __name__ == '__main__':
     stop = time.time()
     
     max_memory = torch.cuda.max_memory_allocated() / (1024 ** 2)
-    to_write = f"Peak memory use: {max_memory}MB - {round((stop-start)*1e6)/1e3}ms"
+    to_write = f"Peak memory use: {max_memory}MB - {round((stop-start)*1e6)/1e3}ms\n"
 
     with open(opt.train_log_filepath, "a") as f:
         f.write(to_write)

@@ -21,7 +21,7 @@ class BaseOptions(object):
     def initialize(self):
         self.initialized = True
         parser = argparse.ArgumentParser()
-        parser.add_argument("--dset_name", type=str, choices=["hl", 'tvsum','charades','charades_vgg'])
+        parser.add_argument("--dset_name", type=str, choices=["hl", 'tvsum','charades','charades_vgg', 'ytc'])
         parser.add_argument("--dset_domain", type=str, choices=["BK", "BT", "DS", "FM", "GA", "MS", "PK", "PR", "VT", "VU"], 
                             help="Domain to train for tvsum dataset. (Only used for tvsum)")
         

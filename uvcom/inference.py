@@ -17,7 +17,7 @@ from uvcom.start_end_dataset import StartEndDataset, start_end_collate, prepare_
 from uvcom.start_end_dataset_audio import \
     StartEndDataset_audio, start_end_collate_audio, prepare_batch_inputs_audio
 from uvcom.postprocessing_uvcom import PostProcessorDETR
-from standalone_eval.eval import eval_submission,eval_submission_cha
+from standalone_eval.eval import eval_submission
 from utils.basic_utils import save_jsonl, save_json
 from utils.temporal_nms import temporal_nms
 
@@ -48,16 +48,10 @@ def eval_epoch_post_processing(submission, opt, gt_data, save_submission_filenam
     save_jsonl(submission, submission_path)
 
     if opt.eval_split_name in ["val"]:  # since test_public has no GT
-        if 'charades' in opt.dset_name:
-            metrics = eval_submission_cha(
-                    submission, gt_data,
-                verbose=opt.debug, match_number=not opt.debug, dataset=opt.dset_name
-            )
-        else:
-            metrics = eval_submission(
-            submission, gt_data,
-            verbose=opt.debug, match_number=not opt.debug, dataset=opt.dset_name
-            )
+        metrics = eval_submission(
+        submission, gt_data, opt,
+        verbose=opt.debug, match_number=not opt.debug, dataset=opt.dset_name
+        )
         save_metrics_path = submission_path.replace(".jsonl", "_metrics.json")
         save_json(metrics, save_metrics_path, save_pretty=True, sort_keys=False)
         latest_file_paths = [submission_path, save_metrics_path]
@@ -77,7 +71,7 @@ def eval_epoch_post_processing(submission, opt, gt_data, save_submission_filenam
         save_jsonl(submission_after_nms, submission_nms_path)
         if opt.eval_split_name == "val":
             metrics_nms = eval_submission(
-                submission_after_nms, gt_data,
+                submission_after_nms, gt_data, opt,
                 verbose=opt.debug, match_number=not opt.debug
             )
             save_metrics_nms_path = submission_nms_path.replace(".jsonl", "_metrics.json")
@@ -238,11 +232,18 @@ def compute_mr_results(model, eval_loader, opt, epoch_i=None, criterion=None, tb
         for k, v in loss_meters.items():
             tb_writer.add_scalar("Eval/{}".format(k), v.avg, epoch_i + 1)
 
-    post_processor = PostProcessorDETR(
-        clip_length=2, min_ts_val=0, max_ts_val=150,
-        min_w_l=2, max_w_l=150, move_window_method="left",
-        process_func_names=("clip_ts", "round_multiple")
-    )
+    if opt.dset_name == 'ytc':
+        post_processor = PostProcessorDETR(
+            clip_length=opt.clip_length, min_ts_val=0, max_ts_val=15000000,
+            min_w_l=2, max_w_l=5000, move_window_method="left",
+            process_func_names=("clip_ts", "round_multiple")
+        )
+    else:
+        post_processor = PostProcessorDETR(
+            clip_length=2, min_ts_val=0, max_ts_val=150,
+            min_w_l=2, max_w_l=150, move_window_method="left",
+            process_func_names=("clip_ts", "round_multiple")
+        )
     mr_res = post_processor(mr_res)
     return mr_res, loss_meters
 

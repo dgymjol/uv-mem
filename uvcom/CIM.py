@@ -1083,7 +1083,8 @@ def build_CIM(args):
         em_iter = args.em_iter,
         n_txt_mu = args.n_txt_mu,
         n_visual_mu = args.n_visual_mu,
-        cross_fusion=args.cross_fusion
+        cross_fusion=args.cross_fusion,
+        num_queries=args.num_queries
     )
 
 
